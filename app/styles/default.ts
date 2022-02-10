@@ -10,7 +10,7 @@ const theme = createTheme({
       main: red.A400,
     },
     background: {
-      default: "#000000", //#1D1F21 #28292B
+      default: "#1D1F21", //#1D1F21 #28292B
     },
   },
 });

@@ -103,6 +103,7 @@ const Search = () => {
               if (selectedCoin) {
                 const selectedCoins = localStorage.getItem("selectedCoins");
                 console.log(selectedCoin);
+                localStorage.removeItem("selectedCoins");
                 localStorage.setItem(
                   "selectedCoins",
                   selectedCoins && typeof JSON.parse(selectedCoins) === "object"

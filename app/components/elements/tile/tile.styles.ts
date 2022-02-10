@@ -6,7 +6,7 @@ export const TileStyles: any = {
   maxWidth: "600px",
   borderColor: theme.palette.primary[600],
   backgroundColor: "white",
-  borderRadius: "24px",
+  borderRadius: "12px",
   position: "relative",
   justifyContent: "center",
   alignItems: "center",

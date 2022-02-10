@@ -28,10 +28,10 @@ const Tile: React.FC<TileProps> = ({ cryptocurrency }) => {
       <Container
         sx={{
           ...TileStyles,
-          border: "3px solid",
+          backgroundColor: "#28292B",
         }}
       >
-        <Chart />
+        <Chart cryptocurrency={cryptocurrency} />
       </Container>
     );
   };
