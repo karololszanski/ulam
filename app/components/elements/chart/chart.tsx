@@ -180,7 +180,7 @@ const Chart: React.FC<ChartProps> = ({ cryptocurrency }) => {
             }}
           >
             {cryptocurrency?.price_change_percentage_24h > 0 && "+"}
-            {cryptocurrency?.price_change_percentage_24h.toFixed(2)}
+            {cryptocurrency?.price_change_percentage_24h?.toFixed(2)}
             {cryptocurrency?.price_change_percentage_24h && "%"}
           </Typography>
         </Grid>

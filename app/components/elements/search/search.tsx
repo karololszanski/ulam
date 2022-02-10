@@ -41,6 +41,10 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
     }
   }, [open, data, error]);
 
+  useEffect(() => {
+    setSelectedCoin(null);
+  }, [openDialog]);
+
   const onItemChange = (e: any, value: any) => {
     setSelectedCoin(value);
   };
@@ -54,11 +58,24 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            p: 10,
+            p: 4,
+            minWidth: 250,
+            maxWidth: 400,
+            width: "80vw",
+            backgroundColor: "#28292B",
           }}
         >
           <Autocomplete
-            sx={{ width: 300 }}
+            sx={{
+              width: "100%",
+              borderRadius: "5px",
+              color: "red",
+              backgroundColor: "primary.500",
+              "& .Mui-focused": {
+                color: "black",
+              },
+            }}
+            color="red"
             open={open}
             onOpen={() => {
               setOpen(true);
@@ -87,6 +104,11 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
             loading={loading}
             renderInput={(params) => (
               <TextField
+                sx={{
+                  borderRadius: "50px",
+                  color: "red",
+                  backgroundColor: "primary",
+                }}
                 {...params}
                 label="Select coin"
                 InputProps={{
@@ -109,6 +131,7 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
               mt: 4,
             }}
             onClick={() => {
+              console.log("Selected coin: ", selectedCoin);
               if (selectedCoin) {
                 dispatch(addCryptocurrency({ cryptocurrency: selectedCoin }));
                 handleClose();

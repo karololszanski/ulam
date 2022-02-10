@@ -10,8 +10,8 @@ import Search from "components/elements/search/search";
 const ChartsGridModule = () => {
   const { selectedCryptocurrencies } = useAppSelector((store) => store.app);
   const [
-    selectedCryptocurenciesWithPrice,
-    setSelectedCryptocurenciesWithPrice,
+    selectedCryptocurrenciesWithPrice,
+    setSelectedCryptocurrenciesWithPrice,
   ] = useState<Array<any>>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const colors = ["#ff6384", "#388e3c", "#42a5f5", "#f57c00", "#ab47bc"];
@@ -28,9 +28,9 @@ const ChartsGridModule = () => {
       retrieveCoinsPrices();
       interval = setInterval(() => {
         retrieveCoinsPrices();
-      }, 5000);
+      }, 20000);
     } else {
-      setSelectedCryptocurenciesWithPrice([]);
+      setSelectedCryptocurrenciesWithPrice([]);
     }
     return () => {
       clearInterval(interval);
@@ -44,7 +44,17 @@ const ChartsGridModule = () => {
         selectedCryptocurrencies.map((coin: any) => coin.id).join(","),
         (data) => {
           console.log("Data: ", data);
-          data && setSelectedCryptocurenciesWithPrice(data as Array<any>);
+          data &&
+            setSelectedCryptocurrenciesWithPrice(
+              selectedCryptocurrencies.map((coin: any) => {
+                return {
+                  ...coin,
+                  ...(data as Array<any>).find(
+                    (dataCoin) => dataCoin?.id === coin?.id
+                  ),
+                };
+              })
+            );
         },
         (error) => {
           console.log("Error occured while fetching coins data: ", { error });
@@ -66,16 +76,16 @@ const ChartsGridModule = () => {
         Ulam Labs recruitment task
       </Typography>
       <Grid container p={2} spacing={2}>
-        {selectedCryptocurenciesWithPrice.map((cryptocurrency, index) => {
+        {selectedCryptocurrenciesWithPrice.map((cryptocurrency, index) => {
           return (
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <Tile
                 cryptocurrency={{ ...cryptocurrency, color: colors[index] }}
               />
             </Grid>
           );
         })}
-        {selectedCryptocurenciesWithPrice.length < 5 && (
+        {selectedCryptocurrenciesWithPrice.length < 5 && (
           <>
             {/* <Grid item xs={12} sm={6}>
               <Tile cryptocurrency={null} />
@@ -88,7 +98,7 @@ const ChartsGridModule = () => {
               color="primary"
               aria-label="add"
               sx={() => {
-                const isEmpty = selectedCryptocurenciesWithPrice.length === 0;
+                const isEmpty = selectedCryptocurrenciesWithPrice.length === 0;
                 return {
                   position: "fixed",
                   bottom: isEmpty ? "50%" : 50,
@@ -105,7 +115,7 @@ const ChartsGridModule = () => {
             >
               <AddIcon
                 sx={
-                  selectedCryptocurenciesWithPrice.length > 0
+                  selectedCryptocurrenciesWithPrice.length > 0
                     ? { fontSize: "30px" }
                     : { fontSize: "40px" }
                 }
