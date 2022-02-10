@@ -2,14 +2,12 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Container,
+  Divider,
   Grid,
   IconButton,
-  Paper,
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { styled } from "@mui/material/styles";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,6 +22,8 @@ import { Line } from "react-chartjs-2";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { getCoinChart } from "api/getCoinChart";
 import { toast } from "react-toastify";
+import { useAppDispatch } from "store/hooks";
+import { removeCryptocurrency } from "store/app/app-slice";
 
 const DAY = 24;
 
@@ -40,6 +40,9 @@ ChartJS.register(
 export const options = {
   responsive: true,
   pointBorderWidth: 0,
+  interaction: {
+    intersect: false,
+  },
   plugins: {
     legend: {
       display: false,
@@ -60,9 +63,10 @@ const Chart: React.FC<ChartProps> = ({ cryptocurrency }) => {
   const [selectedRange, setSelectedRange] = useState({
     key: "1d",
     value: "1",
-    hours: 0,
+    hours: 24,
   });
   const [chartData, setChartData] = useState<Array<Array<number>>>([]);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (cryptocurrency?.id && selectedRange?.value) {
@@ -102,7 +106,7 @@ const Chart: React.FC<ChartProps> = ({ cryptocurrency }) => {
   const onItemChange = (key: string, hours: number) => {
     setSelectedRange({
       key,
-      value: hours ? (hours <= 24 ? "1" : (hours / DAY).toString()) : "max",
+      value: hours ? (hours < 24 ? "1" : (hours / DAY).toString()) : "max",
       hours,
     });
   };
@@ -119,23 +123,65 @@ const Chart: React.FC<ChartProps> = ({ cryptocurrency }) => {
     >
       <Grid container sx={{ pt: 2 }}>
         <Grid item xs={10}>
-          <Typography>{cryptocurrency?.symbol.toUpperCase()}</Typography>
-          <Typography>{cryptocurrency?.name}</Typography>
+          <Typography
+            color="primary"
+            sx={{
+              fontWeight: "700",
+              fontSize: "34px",
+              display: "inline-block",
+              pr: 2,
+            }}
+          >
+            {cryptocurrency?.symbol.toUpperCase()}
+          </Typography>
+          <Typography
+            color="primary.dark"
+            sx={{
+              fontWeight: "700",
+              fontSize: "16px",
+              display: "inline-block",
+            }}
+          >
+            {cryptocurrency?.name}
+          </Typography>
         </Grid>
 
         <IconButton
           size="large"
-          sx={{ position: "absolute", top: 0, right: 0 }}
+          sx={{ position: "absolute", top: 4, right: 4, color: "primary.dark" }}
+          onClick={() => {
+            dispatch(removeCryptocurrency({ cryptocurrency }));
+          }}
         >
           <CancelIcon fontSize="inherit" />
         </IconButton>
       </Grid>
-      <Grid container>
+      <Grid container pb={1}>
         <Grid item xs={12}>
-          <Typography>{cryptocurrency?.current_price ?? "No data"}</Typography>
-          <Typography>
+          <Typography
+            color="primary"
+            sx={{
+              fontWeight: "700",
+              fontSize: "20px",
+              display: "inline-block",
+              pr: 1,
+            }}
+          >
+            {cryptocurrency?.current_price ?? "No data"}
+          </Typography>
+          <Typography
+            color={
+              cryptocurrency?.price_change_percentage_24h > 0 ? "green" : "red"
+            }
+            sx={{
+              fontWeight: "700",
+              fontSize: "16px",
+              display: "inline-block",
+            }}
+          >
             {cryptocurrency?.price_change_percentage_24h > 0 && "+"}
-            {cryptocurrency?.price_change_percentage_24h}
+            {cryptocurrency?.price_change_percentage_24h.toFixed(2)}
+            {cryptocurrency?.price_change_percentage_24h && "%"}
           </Typography>
         </Grid>
       </Grid>
@@ -205,8 +251,9 @@ const Chart: React.FC<ChartProps> = ({ cryptocurrency }) => {
               {
                 label: cryptocurrency?.symbol.toUpperCase(),
                 data: chartData && chartData?.map((data) => data[1]),
-                borderColor: "rgb(255, 99, 132)",
-                backgroundColor: "rgba(255, 99, 132, 0.5)",
+                borderColor: cryptocurrency?.color ?? "rgb(255, 99, 132)",
+                backgroundColor:
+                  cryptocurrency?.color ?? "rgba(255, 99, 132, 0.5)",
               },
             ],
           }}

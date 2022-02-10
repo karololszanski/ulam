@@ -13,6 +13,9 @@ const theme = createTheme({
       default: "#1D1F21", //#1D1F21 #28292B
     },
   },
+  typography: {
+    fontFamily: ["open-sans", "sans-serif"].join(","),
+  },
 });
 
 export default theme;

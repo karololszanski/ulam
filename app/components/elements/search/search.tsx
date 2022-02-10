@@ -3,15 +3,23 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
   TextField,
   Typography,
 } from "@mui/material";
 import useAllCoins from "api/useAllCoins";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useAppDispatch } from "store/hooks";
+import { addCryptocurrency } from "store/app/app-slice";
 
-const Search = () => {
-  const [addMode, setAddMode] = useState(false);
+type SearchProps = {
+  openDialog: boolean;
+  handleClose: () => void;
+};
+
+const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [coins, setCoins] = useState([]);
@@ -39,13 +47,14 @@ const Search = () => {
 
   return (
     <>
-      {addMode ? (
+      <Dialog onClose={handleClose} open={openDialog}>
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            p: 10,
           }}
         >
           <Autocomplete
@@ -101,17 +110,8 @@ const Search = () => {
             }}
             onClick={() => {
               if (selectedCoin) {
-                const selectedCoins = localStorage.getItem("selectedCoins");
-                console.log(selectedCoin);
-                localStorage.removeItem("selectedCoins");
-                localStorage.setItem(
-                  "selectedCoins",
-                  selectedCoins && typeof JSON.parse(selectedCoins) === "object"
-                    ? JSON.stringify(
-                        JSON.parse(selectedCoins).concat([selectedCoin])
-                      )
-                    : JSON.stringify([selectedCoin])
-                );
+                dispatch(addCryptocurrency({ cryptocurrency: selectedCoin }));
+                handleClose();
               } else {
                 toast.warning("No coin selected", {
                   position: "top-center",
@@ -130,27 +130,12 @@ const Search = () => {
             variant="text"
             component="div"
             sx={{ mt: 2 }}
-            onClick={() => setAddMode(false)}
+            onClick={() => handleClose()}
           >
             Cancel
           </Button>
         </Box>
-      ) : (
-        <Box
-          sx={{
-            margin: 0,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            MsTransform: "translate(-50%, -50%)",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <Button variant="outlined" onClick={() => setAddMode(true)}>
-            Add cryptocurrency
-          </Button>
-        </Box>
-      )}
+      </Dialog>
     </>
   );
 };

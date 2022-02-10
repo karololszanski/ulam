@@ -7,14 +7,18 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Particles from "react-tsparticles";
 import { particlesOptions } from "styles/particles";
+import { Provider } from "react-redux";
+import { store } from "store/store";
 
 export default function ExtendedApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
-      <Particles id="tsparticles" options={particlesOptions} />
-      <ToastContainer />
-      <CssBaseline />
-      <Component {...pageProps} />
+      <Provider store={store}>
+        <Particles id="tsparticles" options={particlesOptions} />
+        <ToastContainer />
+        <CssBaseline />
+        <Component {...pageProps} />
+      </Provider>
     </ThemeProvider>
   );
 }

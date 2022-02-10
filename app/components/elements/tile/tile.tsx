@@ -10,18 +10,18 @@ type TileProps = {
 };
 
 const Tile: React.FC<TileProps> = ({ cryptocurrency }) => {
-  const emptyTile = () => {
-    return (
-      <Container
-        sx={{
-          ...TileStyles,
-          border: "3px dotted",
-        }}
-      >
-        <Search />
-      </Container>
-    );
-  };
+  // const emptyTile = () => {
+  //   return (
+  //     <Container
+  //       sx={{
+  //         ...TileStyles,
+  //         border: "3px dotted",
+  //       }}
+  //     >
+  //       <Search />
+  //     </Container>
+  //   );
+  // };
 
   const tileWithCrypto = () => {
     return (
@@ -36,7 +36,8 @@ const Tile: React.FC<TileProps> = ({ cryptocurrency }) => {
     );
   };
 
-  return <>{cryptocurrency ? tileWithCrypto() : emptyTile()}</>;
+  // return <>{cryptocurrency ? tileWithCrypto() : emptyTile()}</>;
+  return <>{tileWithCrypto()}</>;
 };
 
 export default Tile;

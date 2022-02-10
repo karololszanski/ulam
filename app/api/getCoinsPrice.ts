@@ -12,7 +12,7 @@ export function getCoinsPrice(
         vs_currency: "usd",
         ids: coins,
         order: "market_cap_desc",
-        per_page: 100,
+        per_page: 5,
         page: 1,
         sparkline: false,
         price_change_percentage: "24h",

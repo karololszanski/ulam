@@ -4,85 +4,112 @@ import Tile from "components/elements/tile/tile";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
+import { useAppSelector } from "store/hooks";
+import Search from "components/elements/search/search";
 
 const ChartsGridModule = () => {
-  const [selectedCryptoCurrencies, setSelectedCryptoCurrencies] = useState([]);
-  const [cryptoCurrenciesWithPrice, setCryptoCurrenciesWithPrice] = useState(
-    []
-  );
+  const { selectedCryptocurrencies } = useAppSelector((store) => store.app);
+  const [
+    selectedCryptocurenciesWithPrice,
+    setSelectedCryptocurenciesWithPrice,
+  ] = useState<Array<any>>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const colors = ["#ff6384", "#388e3c", "#42a5f5", "#f57c00", "#ab47bc"];
 
-  // Retrive selected cryptocurrnecies from local storage
-  useEffect(() => {
-    if (typeof localStorage.getItem("selectedCoins") === "string") {
-      const selectedCoins = JSON.parse(
-        localStorage.getItem("selectedCoins") as string
-      );
-      console.log("Selected cryptocurrencies2: ", selectedCoins);
-      setSelectedCryptoCurrencies(selectedCoins);
-    }
-  }, [typeof window !== "undefined" && localStorage.getItem("selectedCoins")]);
-
+  let interval: NodeJS.Timer;
   // Fetch current price for selected currencies
   useEffect(() => {
     console.log(
       "SelectedCrypto: ",
-      selectedCryptoCurrencies,
-      selectedCryptoCurrencies.length
+      selectedCryptocurrencies,
+      selectedCryptocurrencies.length
     );
-    if (selectedCryptoCurrencies?.length > 0) {
+    if (selectedCryptocurrencies?.length > 0) {
       retrieveCoinsPrices();
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         retrieveCoinsPrices();
-      }, 10000);
-      return () => clearInterval(interval);
+      }, 5000);
+    } else {
+      setSelectedCryptocurenciesWithPrice([]);
     }
-  }, [selectedCryptoCurrencies]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [selectedCryptocurrencies]);
 
   const retrieveCoinsPrices = () => {
-    getCoinsPrice(
-      selectedCryptoCurrencies.map((coin: any) => coin.id).join(","),
-      (data) => {
-        // console.log("Data: ", data);
-        data && setCryptoCurrenciesWithPrice(data);
-      },
-      (error) => {
-        console.log("Error occured while fetching coins data: ", { error });
-        toast.warning("Error occured while fetching coins data", {
-          position: "top-center",
-          autoClose: 3000,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: "Coin2Error",
-        });
-      }
-    );
+    // Issue when coin id was empty and was downloading all coins
+    selectedCryptocurrencies.map((coin: any) => coin.id).join(",") !== "" &&
+      getCoinsPrice(
+        selectedCryptocurrencies.map((coin: any) => coin.id).join(","),
+        (data) => {
+          console.log("Data: ", data);
+          data && setSelectedCryptocurenciesWithPrice(data as Array<any>);
+        },
+        (error) => {
+          console.log("Error occured while fetching coins data: ", { error });
+          toast.warning("Error occured while fetching coins data", {
+            position: "top-center",
+            autoClose: 3000,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            toastId: "Coin2Error",
+          });
+        }
+      );
   };
 
   return (
     <Container sx={{ pb: 10 }}>
-      <Typography m={4} variant="h3" color="white">
+      <Typography m={3} variant="h3" color="white" sx={{ fontWeight: "700" }}>
         Ulam Labs recruitment task
       </Typography>
       <Grid container p={2} spacing={2}>
-        {cryptoCurrenciesWithPrice.map((cryptocurrency) => {
+        {selectedCryptocurenciesWithPrice.map((cryptocurrency, index) => {
           return (
             <Grid item xs={12} sm={6}>
-              <Tile cryptocurrency={cryptocurrency} />
+              <Tile
+                cryptocurrency={{ ...cryptocurrency, color: colors[index] }}
+              />
             </Grid>
           );
         })}
-        {cryptoCurrenciesWithPrice.length < 5 && (
+        {selectedCryptocurenciesWithPrice.length < 5 && (
           <>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <Tile cryptocurrency={null} />
-            </Grid>
+            </Grid> */}
+            <Search
+              openDialog={openDialog}
+              handleClose={() => setOpenDialog(false)}
+            />
             <Fab
               color="primary"
               aria-label="add"
-              sx={{ position: "fixed", bottom: 50, right: 50 }}
+              sx={() => {
+                const isEmpty = selectedCryptocurenciesWithPrice.length === 0;
+                return {
+                  position: "fixed",
+                  bottom: isEmpty ? "50%" : 50,
+                  right: isEmpty ? "50%" : 50,
+                  width: isEmpty ? "100px" : "56px",
+                  height: isEmpty ? "100px" : "56px",
+                  transition:
+                    "bottom 3s, right 3s, width 3s, height 3s, -ms-transform 3s, transform 3s",
+                  MsTransform: isEmpty ? "translate(50%, 50%)" : "initial",
+                  transform: isEmpty ? "translate(50%, 50%)" : "initial",
+                };
+              }}
+              onClick={() => setOpenDialog(true)}
             >
-              <AddIcon />
+              <AddIcon
+                sx={
+                  selectedCryptocurenciesWithPrice.length > 0
+                    ? { fontSize: "30px" }
+                    : { fontSize: "40px" }
+                }
+              />
             </Fab>
           </>
         )}
