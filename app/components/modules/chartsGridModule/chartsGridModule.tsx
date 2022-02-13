@@ -71,7 +71,12 @@ const ChartsGridModule = () => {
 
   return (
     <Container sx={{ pb: 10 }}>
-      <Typography m={3} variant="h3" color="white" sx={{ fontWeight: "700" }}>
+      <Typography
+        m={3}
+        variant="h3"
+        color="white"
+        sx={{ fontWeight: "700", fontSize: { xs: "36px", sm: "3rem" } }}
+      >
         Ulam Labs recruitment task
       </Typography>
       <Grid container p={2} spacing={2}>
