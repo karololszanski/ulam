@@ -1,11 +1,12 @@
 import { Container, Fab, Grid, Typography } from "@mui/material";
 import { getCoinsPrice } from "api/getCoinsPrice";
-import Tile from "components/elements/tile/tile";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import { useAppSelector } from "store/hooks";
-import Search from "components/elements/search/search";
+import { SECONDS_MILISECONDS } from "constants/projectConstants";
+import ChartTile from "components/elements/tiles/chartTile/chartTile";
+import SearchTile from "components/elements/tiles/searchTile/searchTile";
 
 const ChartsGridModule = () => {
   const { selectedCryptocurrencies } = useAppSelector((store) => store.app);
@@ -19,37 +20,35 @@ const ChartsGridModule = () => {
   let interval: NodeJS.Timer;
   // Fetch current price for selected currencies
   useEffect(() => {
-    console.log(
-      "SelectedCrypto: ",
-      selectedCryptocurrencies,
-      selectedCryptocurrencies.length
-    );
+    let isSubscribed = true;
+
     if (selectedCryptocurrencies?.length > 0) {
-      retrieveCoinsPrices();
+      retrieveCoinsPrices(isSubscribed);
       interval = setInterval(() => {
-        retrieveCoinsPrices();
-      }, 20000);
+        retrieveCoinsPrices(isSubscribed);
+      }, 30 * SECONDS_MILISECONDS);
     } else {
       setSelectedCryptocurrenciesWithPrice([]);
     }
     return () => {
       clearInterval(interval);
+      isSubscribed = false;
     };
   }, [selectedCryptocurrencies]);
 
-  const retrieveCoinsPrices = () => {
+  const retrieveCoinsPrices = (isSubscribed: boolean) => {
     // Issue when coin id was empty and was downloading all coins
     selectedCryptocurrencies.map((coin: any) => coin.id).join(",") !== "" &&
       getCoinsPrice(
         selectedCryptocurrencies.map((coin: any) => coin.id).join(","),
         (data) => {
-          console.log("Data: ", data);
           data &&
+            isSubscribed &&
             setSelectedCryptocurrenciesWithPrice(
               selectedCryptocurrencies.map((coin: any) => {
                 return {
                   ...coin,
-                  ...(data as Array<any>).find(
+                  ...(data as Array<{ id: string }>).find(
                     (dataCoin) => dataCoin?.id === coin?.id
                   ),
                 };
@@ -78,31 +77,30 @@ const ChartsGridModule = () => {
       <Grid container p={2} spacing={2}>
         {selectedCryptocurrenciesWithPrice.map((cryptocurrency, index) => {
           return (
-            <Grid item xs={12} md={6}>
-              <Tile
+            <Grid item xs={12} md={6} key={index}>
+              <ChartTile
                 cryptocurrency={{ ...cryptocurrency, color: colors[index] }}
               />
             </Grid>
           );
         })}
-        {selectedCryptocurrenciesWithPrice.length < 5 && (
+        {selectedCryptocurrenciesWithPrice?.length < 5 && (
           <>
-            {/* <Grid item xs={12} sm={6}>
-              <Tile cryptocurrency={null} />
-            </Grid> */}
-            <Search
+            <SearchTile
               openDialog={openDialog}
               handleClose={() => setOpenDialog(false)}
             />
             <Fab
               color="primary"
               aria-label="add"
+              data-testid="add-button"
+              role="button"
               sx={() => {
                 const isEmpty = selectedCryptocurrenciesWithPrice.length === 0;
                 return {
                   position: "fixed",
-                  bottom: isEmpty ? "50%" : 50,
-                  right: isEmpty ? "50%" : 50,
+                  bottom: isEmpty ? "50%" : 30,
+                  right: isEmpty ? "50%" : 30,
                   width: isEmpty ? "100px" : "56px",
                   height: isEmpty ? "100px" : "56px",
                   transition:

@@ -5,34 +5,47 @@ import {
   CircularProgress,
   Dialog,
   TextField,
-  Typography,
 } from "@mui/material";
 import useAllCoins from "api/useAllCoins";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "store/hooks";
 import { addCryptocurrency } from "store/app/app-slice";
+import { useAppSelector } from "store/hooks";
 
 type SearchProps = {
   openDialog: boolean;
   handleClose: () => void;
 };
 
-const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
+const SearchTile: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
   const dispatch = useAppDispatch();
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [coins, setCoins] = useState([]);
-  const [selectedCoin, setSelectedCoin] = useState(null);
+  const { selectedCryptocurrencies } = useAppSelector((store) => store.app);
+  const [open, setOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [coins, setCoins] = useState<
+    Array<{
+      id: string;
+      symbol: string;
+      name: string;
+    }>
+  >([]);
+  const [selectedCoin, setSelectedCoin] = useState<{
+    id: string;
+    symbol: string;
+    name: string;
+  } | null>(null);
   const { data, error } = useAllCoins();
 
   useEffect(() => {
-    // console.log("Data0: ", open, data, error);
     if (open && data && data?.length !== 0) {
-      //   console.log("Data1: ", data);
-      setCoins(data);
+      setCoins(
+        data.filter((coin: { id: string; name: string; symbol: string }) => {
+          return coin?.id && coin?.name && coin?.symbol;
+        })
+      );
       setLoading(false);
-    } else if (open && coins?.length === 0) {
+    } else if (open && data?.length === 0) {
       setLoading(true);
     } else if (error) {
       toast.error("Error occured while fetching coins data");
@@ -75,7 +88,7 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
                 color: "black",
               },
             }}
-            color="red"
+            data-testid="autocomplete"
             open={open}
             onOpen={() => {
               setOpen(true);
@@ -85,15 +98,20 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
             }}
             onChange={onItemChange}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            getOptionLabel={(coin: any) => coin.name}
+            getOptionLabel={(coin: any) =>
+              `${coin.name} (${coin.symbol.toUpperCase()})`
+            }
             filterOptions={(coins, value) =>
               coins.filter((coin) => {
-                if (value.inputValue?.length > 1) {
+                if (value.inputValue?.length > 0) {
                   return (
                     coin.symbol
                       .toLowerCase()
                       .startsWith(value.inputValue.toLowerCase()) ||
                     coin.name
+                      .toLowerCase()
+                      .startsWith(value.inputValue.toLowerCase()) ||
+                    `${coin.name} (${coin.symbol.toUpperCase()})`
                       .toLowerCase()
                       .startsWith(value.inputValue.toLowerCase())
                   );
@@ -110,16 +128,16 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
                   backgroundColor: "primary",
                 }}
                 {...params}
-                label="Select coin"
+                placeholder="Select coin"
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (
-                    <React.Fragment>
+                    <>
                       {loading ? (
                         <CircularProgress color="inherit" size={20} />
                       ) : null}
                       {params.InputProps.endAdornment}
-                    </React.Fragment>
+                    </>
                   ),
                 }}
               />
@@ -130,11 +148,26 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
             sx={{
               mt: 4,
             }}
+            data-testid="add-button-coin"
             onClick={() => {
-              console.log("Selected coin: ", selectedCoin);
               if (selectedCoin) {
-                dispatch(addCryptocurrency({ cryptocurrency: selectedCoin }));
-                handleClose();
+                if (
+                  !selectedCryptocurrencies.some(
+                    (coin) => selectedCoin?.id === coin?.id
+                  )
+                ) {
+                  dispatch(addCryptocurrency({ cryptocurrency: selectedCoin }));
+                  handleClose();
+                } else {
+                  toast.warning("Coin already selected", {
+                    position: "top-center",
+                    autoClose: 3000,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    toastId: "Coin4Error",
+                  });
+                }
               } else {
                 toast.warning("No coin selected", {
                   position: "top-center",
@@ -163,4 +196,4 @@ const Search: React.FC<SearchProps> = ({ openDialog, handleClose }) => {
   );
 };
 
-export default Search;
+export default SearchTile;
